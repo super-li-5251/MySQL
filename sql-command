@@ -1,11 +1,22 @@
-netstat -ntulp | grep :3306
+# 安装包下载位置 http://dev.mysql.com/downloads/mysql
+# 需要的RPM包
+mysql-community-client            # 客户端应用程序
+mysql-community-common            # 数据库和客户端库共享文件
+mysql-community-devel             # 客户端应用程序的库和头文件
+mysql-community-embedded          # 嵌入式函数库
+mysql-community-embedded-compat   # 嵌入式兼容函数库
+mysql-community-embedded-devel    # 头文件和库文件作为 MySQL 的嵌入式库文件
+mysql-community-libs              # MySQL 数据库客户端应用程序的共享库
+mysql-community-libs-compat       # 客户端应用程序的共享兼容库
+
+netstat -ntulp | grep :3306       # 3306 是 MySQL 的端口
 ps -C mysqld
 
 /etc/my.cnf		主配置文件
 /var/lib/mysql		数据库目录
 /var/log/mysqld.log		日志文件
 
-首次登录MySQL
+首次登录 MySQL
 grep 'password' /var/log/mysqld.log  查看初始化随机密码
 mysql -hlocalhost -uroot -p'随机密码'
 >alter user root@"localhost" identified by "新密码"
