@@ -4,7 +4,9 @@ ps -C mysqld
 /etc/my.cnf		主配置文件
 /var/lib/mysql		数据库目录
 /var/log/mysqld.log		日志文件
-grep 'password' /var/log/mysqld.log  查看随机密码
+
+首次登录MySQL
+grep 'password' /var/log/mysqld.log  查看初始化随机密码
 mysql -hlocalhost -uroot -p'随机密码'
 >alter user root@"localhost" identified by "新密码"
 mysql -hlocalhost -uroot -p"新密码"
@@ -14,6 +16,7 @@ mysql -hlocalhost -uroot -p"新密码"
 >set global validata_password_policy=0 ;
 >set global validata_password_length+6 ;
 
+修改配置文件配置永久密码策略
 vim /etc/my.cnf
   [mysqld]
   validata_password_policy=0
