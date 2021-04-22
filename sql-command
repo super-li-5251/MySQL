@@ -1,0 +1,209 @@
+netstat -ntulp | grep :3306
+ps -C mysqld
+
+/etc/my.cnf		主配置文件
+/var/lib/mysql		数据库目录
+/var/log/mysqld.log		日志文件
+grep 'password' /var/log/mysqld.log  查看随机密码
+mysql -hlocalhost -uroot -p'随机密码'
+>alter user root@"localhost" identified by "新密码"
+mysql -hlocalhost -uroot -p"新密码"
+
+修改密码策略
+>show variables like "%password%" ;
+>set global validata_password_policy=0 ;
+>set global validata_password_length+6 ;
+
+vim /etc/my.cnf
+  [mysqld]
+  validata_password_policy=0
+  validata_password_length=6
+
+库管理命令
+show databases ;
+select user() ;
+use  库名 ；
+select databases() ;
+create database 库名 ；
+show tables ;
+drop database 库名 ；
+
+表管理命令
+create table 库名.表名(字段一 类型(宽度), 字段二 类型(宽度), ...) default charset=utf8 ;
+example : 
+> create table db1.stuinfo(name char(15), homeaddr char(20) );
+
+desc 库名.表名 ; 	查看表结构
+drop table 库名.表名 ;  删除表
+select * from 库名.表名 ;	查看表记录
+insert into 库名.表名 values(值列表) ; 插入表记录
+update 库名.表名 set 字段=值 ;	修改表记录
+delete from 表名 ;		删除表记录
+example :
+> insert into db1.stuinfo values("jim","usa"),("lilei","china") ;
+> select * from db1.stuinfo ;
+> update db1.stuinfo set homeaddr= "beijing" ;
+
+时间函数
+curtime()	获取当前系统时间
+curdate()	获取当前系统日期
+now()	获取当前系统日期和时间
+year()	获取年
+month()	获取月
+day()	获取日
+date()	获取日期
+time()	获取时间
+
+修改表结构：
+alter table 库名.表名 执行动作 ;
+add	添加字段
+modify	修改字段类型
+change	修改字段名
+drop	删除字段
+rename	修改表名
+> alter table 库名.表名 add 字段名 类型(宽度) 约束条件 [ after 字段名 | first ] ;
+example :
+> alter table db1.t2 add name char(15) first ;
+> alter table 库名.表名 modify 字段名 类型(宽度) 约束条件 [ after 字段名 | first ] ;
+example :
+> alter table db1.t2 modify id int ;
+
+修改字段名
+> alter table 库名.表名 change 源字段名 新字段名 类型(宽度) 约束条件 ;
+
+> alter table db1.t2 change id user_num int ;
+
+删除字段
+> alter table 库名.表名 drop 字段名 ;
+> alter table db1.t2 drop user_num , drop pay ;
+
+修改表名
+> alter table 表名 rename 新表明 ;
+> alter table t2 rename school ;
+
+在已有的表里创建索引
+> create index 索引名 on 表名(字段名) ;
+删除索引
+> drop index 索引名 on 表名 ;
+
+查看索引信息
+> show index from 表名 \G;
+
+建表时创建主键
+> create table t8 (name char(3) primary key, id int);
+> desc t8 ;
+在已有表里添加主键
+> alter table 表名 add primary key(字段名) ;
+删除主键
+> alter table 表名 drop primary key ;
+
+创建复合主键
+> alter table 表名 add primary key(字段名列表) ;
+> create table t5(name char(10) , class char(7) , status enum("yes","no"), primary key(name,class));
+auto_increment 连用
+> create table t6(id int primary key auto_increment, name char(10), sex enum("man","woman"));
+
+foreign key外键
+创建外键
+> create table 表名(字段名列表, foreign key(字段名) references 表名(字段名) on update cascade on delete cascade)engine=innodb;
+删除外键
+> alter table 表名 drop foreign key 外键名;
+
+增加表记录
+> insert into 表名 values (字段值列表) ;
+
+查看记录
+> select 字段1, ... , 字段N from 库名.表名;
+条件查询
+> select 字段1, ... , 字段N from 库名.表名 where 条件表达式 ;
+
+更新表记录
+批量更新
+> update 库名.表名 set 字段名=值, 字段名=值, 字段名=值, ..... ;
+条件匹配更新
+> update 库名.表名 set 字段名=值, 字段名=值, 字段名=值, ..... where 条件表达式 ;
+
+删除表记录
+> delete from 库名.表名 where 条件表达式 ;
+> delete from 库名.表名;
+
+数据导入
+> load data infile "目录名/文件名" into table 库名.表名 fields terminated by "分隔符" lines terminated by "\n" ;
+
+数据导出
+> select命令 into outfile "目录名/文件名" ;
+> select命令 into outfile "目录名/文件名" fields terminated by "分隔符" ;
+> select命令 into outfile "目录名/文件名" fields terminated by "分隔符" lines terminated by "\n" ;
+
+grant 授权
+> grant 权限列表 on 库名 to 用户名@"客户端地址" identified by "密码" with grant option ;
+> grant all on db4.* to yaya@"%" identified by "密码" ;
+> grant select on db3.user to admin@"192.168.4.%" identified by "密码" ;
+> grant select,insert,update,delete on db3.* to admin2@"localhost" identified by "密码" ;
+
+撤销权限
+> revoke 权限列表 on 库名.表名 from 用户名@"客户端地址" ;
+
+恢复root密码
+vim /etc/my.cnf
+ [mysqld]
+ ...
+ skip-grant-tables
+]# systemctl restart mysqld
+]# mysql
+> update mysql.user set authentication_string=password("密码") where user="root" and host="localhost" ;
+> flush privileges ;
+
+完全备份及恢复
+mysqldump -uroot -p密码 库名 > 目录/xxx.sql
+mysql -uroot -p密码 [库名] < 目录/xxx.sql
+
+清理日志
+> purge master logs to "binlog文件名" ;	删除指定编号之前的binlog日志文件
+> reset master ;			删除所有binlog日志，重建新日志
+
+分析日志
+> show variables like "binlog_format" ;
+]# mysqlbinlog --start-datetime="2018-06-18 15:30" /var/lib/mysql/mysql-bin.000001
+恢复数据
+]# mysqlbinlog mysql-bin.000001  |  mysql  -uroot -p密码
+
+MySQL 主从同步
+配置主服务器
+]# vim /etc/my.cnf
+   [mysqld]
+   log_bin=日志名	启用binlog日志
+   server_id=id值	指定服务器ID号
+> grant replication slave on *.* to repluser@"%" identified by "密码" ;
+> show master status\G ;
+配置从服务器
+]# vim /etc/my.cnf
+   [mysqld]
+   server_id=id值
+主库备份数据，--master-data记录当前备份数据对应的日志信息
+]# mysqldump -uroot -p密码 --master-data 数据库名 > /allbak.sql
+]# scp /allbak.sql  root@192.168.4.52:/root/
+从服务器恢复数据
+]# mysql -uroot -p密码 数据库名 < /root/allbak.sql
+指定主服务器信息
+> change master to master_host="主库IP地址" , master_user="主库授权用户" ,master_password="授权用户密码",master_log_file="主库日主文件", master_log_pos=日志偏移量；
+> start slave ;
+> show slave status \G;
+确认IO线程、SQL线程都是 Yes 状态
+
+通过binlog日志恢复MySQL数据库数据
+
+日志文件位置 /var/log/mysql
+
+分析日志文件命令 ：
+mysqlbinlog /var/log/mysql-bin.000002
+如果提示 mysqlbinlog: unknown variable 'default-character-set=utf8mb4'
+这里命令需要添加 --no-defaults 如下：
+mysqlbinlog --no-defaults /var/log/mysql-bin.000002
+这里得到binlog日志中的时间
+
+恢复指定数据：
+mysqlbinlog --no-defaults -stop-datetime='2021-02-03 15:08:35'  /var/lib/mysql/mysql-bin.000001  | mysql -uuser -ppassword
+
+mysqlbinlog 命令的使用方法帮助信息：
+mysqlbinlog --no-defaults --help
